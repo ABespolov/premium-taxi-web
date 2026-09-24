@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router';
+import { useNavigate, useSearchParams } from 'react-router';
 import { requestCode, verifyCode } from '@/api/auth';
 import { saveProfile } from '@/api/profile';
 import { Button } from '@/components/Button';
 import { NavBar } from '@/components/NavBar';
 import { FormFooter, Page, PageBody } from '@/components/Page';
-import { useNavigateKeepingFocus } from '@/hooks/use-navigate-keeping-focus';
 import { messageOf } from '@/hooks/use-request';
 import { formatCountdown } from '@/utils/format';
 
@@ -14,7 +13,7 @@ const RESEND_AFTER_SECONDS = 30;
 const SLOTS = Array.from({ length: CODE_LENGTH }, (_, index) => index);
 
 export function Code() {
-  const navigate = useNavigateKeepingFocus();
+  const navigate = useNavigate();
   const [params] = useSearchParams();
   const phone = params.get('phone') ?? '';
   const input = useRef<HTMLInputElement>(null);
@@ -86,7 +85,6 @@ export function Code() {
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={CODE_LENGTH}
-            data-carry-focus
             aria-label={`Verification code, ${code.length} of ${CODE_LENGTH} digits entered`}
             className="absolute inset-0 size-full opacity-0"
             style={{ caretColor: 'transparent' }}

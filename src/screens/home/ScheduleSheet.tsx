@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { useState } from 'react';
 import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
@@ -60,10 +61,11 @@ function defaultPickup() {
 
 const DAY_LABELS = Array.from({ length: DAYS_AHEAD }, (_, offset) => formatDay(dayAt(offset)));
 
+const SLIDE = { type: 'tween', ease: [0.32, 0.72, 0, 1], duration: 0.4 } as const;
+
 // Figma's Schedule sheet, raised over the map with a scrim; a tap on the scrim closes it.
 export function ScheduleSheet({ onClose }: { onClose: () => void }) {
   const { booking, update } = useBooking();
-  const [isClosing, setIsClosing] = useState(false);
   const [selection, setSelection] = useState(() =>
     selectionFor(booking.scheduledAt ?? defaultPickup()),
   );
@@ -71,31 +73,30 @@ export function ScheduleSheet({ onClose }: { onClose: () => void }) {
   const pickup = pickupAt(selection);
   const isTooSoon = pickup.getTime() < Date.now() + MIN_LEAD_MINUTES * 60_000;
 
-  // Slides away first; the sheet is removed once its animation ends.
-  function close() {
-    setIsClosing(true);
-  }
-
   function confirm() {
     update({ scheduledAt: pickup });
-    close();
+    onClose();
   }
 
   return (
     <div className="absolute inset-0 z-10 flex flex-col justify-end">
-      <button
+      <motion.button
         type="button"
         aria-label="Close"
-        onClick={close}
-        className={`absolute inset-0 bg-scrim ${isClosing ? 'fade-out' : 'fade-in'}`}
+        onClick={onClose}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="absolute inset-0 bg-scrim"
       />
-      <div
+      <motion.div
         role="dialog"
         aria-label="Schedule a ride"
-        onAnimationEnd={(event) => {
-          if (isClosing && event.target === event.currentTarget) onClose();
-        }}
-        className={`relative flex flex-col gap-5 rounded-t-[20px] bg-background-secondary px-5 pt-9 ${isClosing ? 'slide-down' : 'slide-up'}`}
+        initial={{ y: '100%' }}
+        animate={{ y: 0 }}
+        exit={{ y: '100%' }}
+        transition={SLIDE}
+        className="relative flex flex-col gap-5 rounded-t-[20px] bg-background-secondary px-5 pt-9"
         style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
       >
         <div className="absolute top-[11px] left-1/2 h-[5px] w-9 -translate-x-1/2 rounded-[3px] bg-label-tertiary" />
@@ -144,7 +145,7 @@ export function ScheduleSheet({ onClose }: { onClose: () => void }) {
           </p>
         </div>
         <Button label="Set pickup time" onPress={confirm} isDisabled={isTooSoon} />
-      </div>
+      </motion.div>
     </div>
   );
 }

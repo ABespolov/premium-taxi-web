@@ -1,4 +1,5 @@
-import { type ReactNode, use, useState } from 'react';
+import { AnimatePresence, motion } from 'motion/react';
+import { createContext, type ReactNode, use, useRef } from 'react';
 import {
   UNSAFE_LocationContext as LocationContext,
   useLocation,
@@ -6,21 +7,26 @@ import {
   useOutlet,
 } from 'react-router';
 
+// iOS push timing: the new page slides over while the old one drifts a third of the way.
+const SLIDE = { type: 'tween', ease: [0.32, 0.72, 0, 1], duration: 0.42 } as const;
+const PARALLAX = '-30%';
+
 type Direction = 'forward' | 'back';
 
-type RouteState = React.ContextType<typeof LocationContext>;
-
-type Entry = {
-  key: string;
-  page: ReactNode;
-  // The address the page last had, so a page on its way out does not turn into the one
-  // coming in.
-  route: RouteState;
-  phase: 'enter' | 'idle' | 'exit';
-  direction: Direction;
-  isEmpty: boolean;
+const variants = {
+  enter: (direction: Direction) => ({ x: direction === 'forward' ? '100%' : PARALLAX }),
+  center: { x: 0 },
+  exit: (direction: Direction) => ({
+    x: direction === 'forward' ? PARALLAX : '100%',
+    zIndex: direction === 'back' ? 1 : 0,
+  }),
 };
 
+// The page the router is on now; a page that is not it is on its way out.
+const CurrentPageContext = createContext('');
+
+// Renders the child route as a page in a stack: pushed pages slide in from the right and
+// back slides them away. A leaving page keeps showing what it showed.
 type Props = {
   // Pages that share one slot, so moving between them is not a page transition.
   group?: (pathname: string) => string;
@@ -28,49 +34,44 @@ type Props = {
   emptyPath?: string;
 };
 
-// Renders the child route as a page in a stack, with iOS push timing done in CSS: a pushed
-// page slides in from the right over the old one, which drifts a third of the way left;
-// back reverses it. A leaving page stays until its animation ends.
 export function StackOutlet({ group, emptyPath }: Props) {
-  const route = use(LocationContext);
   const location = useLocation();
   const outlet = useOutlet();
   const direction: Direction = useNavigationType() === 'POP' ? 'back' : 'forward';
   const key = group ? group(location.pathname) : location.pathname;
-  const isEmpty = location.pathname === emptyPath;
-  const [entries, setEntries] = useState<Entry[]>(() => [
-    { key, page: outlet, route, phase: 'idle', direction, isEmpty },
-  ]);
 
-  const top = entries[entries.length - 1];
-  if (top.key !== key) {
-    setEntries([
-      ...entries.map((entry) => ({ ...entry, phase: 'exit' as const, direction })),
-      { key, page: outlet, route, phase: 'enter', direction, isEmpty },
-    ]);
-  } else if (top.route !== route && top.phase !== 'exit') {
-    setEntries([...entries.slice(0, -1), { ...top, page: outlet, route, isEmpty }]);
-  }
+  return (
+    <CurrentPageContext value={key}>
+      <AnimatePresence initial={false} custom={direction}>
+        <motion.div
+          key={key}
+          custom={direction}
+          variants={variants}
+          initial="enter"
+          animate="center"
+          exit="exit"
+          transition={SLIDE}
+          className={
+            location.pathname === emptyPath
+              ? 'pointer-events-none absolute inset-0'
+              : 'absolute inset-0'
+          }
+        >
+          <Frozen pageKey={key}>{outlet}</Frozen>
+        </motion.div>
+      </AnimatePresence>
+    </CurrentPageContext>
+  );
+}
 
-  function finish(entry: Entry) {
-    setEntries((current) =>
-      entry.phase === 'exit'
-        ? current.filter((candidate) => candidate !== entry)
-        : current.map((candidate) =>
-            candidate === entry ? { ...candidate, phase: 'idle' } : candidate,
-          ),
-    );
-  }
+type FrozenProps = { pageKey: string; children: ReactNode };
 
-  return entries.map((entry) => (
-    <div
-      key={entry.key}
-      className={`page ${entry.phase === 'idle' ? '' : `page-${entry.phase}-${entry.direction}`} ${entry.isEmpty ? 'pointer-events-none' : ''}`}
-      onAnimationEnd={(event) => {
-        if (event.target === event.currentTarget) finish(entry);
-      }}
-    >
-      <LocationContext value={entry.route}>{entry.page}</LocationContext>
-    </div>
-  ));
+// While a page is current it follows the router; once it starts leaving it keeps the route
+// and address it last had, so it does not turn into the page coming in.
+function Frozen({ pageKey, children }: FrozenProps) {
+  const route = use(LocationContext);
+  const currentKey = use(CurrentPageContext);
+  const last = useRef({ route, children });
+  if (pageKey === currentKey) last.current = { route, children };
+  return <LocationContext value={last.current.route}>{last.current.children}</LocationContext>;
 }

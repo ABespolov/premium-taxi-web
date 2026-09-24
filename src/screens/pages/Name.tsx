@@ -6,6 +6,7 @@ import { NavBar } from '@/components/NavBar';
 import { FormFooter, Page, PageBody } from '@/components/Page';
 import { TextField } from '@/components/TextField';
 import { messageOf } from '@/hooks/use-request';
+import { hideKeyboardThen } from '@/utils/keyboard';
 
 export function Name() {
   const navigate = useNavigate();
@@ -15,7 +16,8 @@ export function Name() {
   function save() {
     try {
       saveProfile({ firstName, lastName: '' });
-      navigate('/home', { replace: true });
+      // The map opens full screen; it should not appear under a keyboard still going down.
+      hideKeyboardThen(() => navigate('/home', { replace: true }));
     } catch (caught) {
       setError(messageOf(caught));
     }
@@ -43,7 +45,6 @@ export function Name() {
           autoComplete="given-name"
           autoCapitalize="words"
           enterKeyHint="done"
-          data-carry-focus
         />
         {error ? <p className="text-footnote text-label-secondary">{error}</p> : null}
       </PageBody>

@@ -1,3 +1,4 @@
+import { motion } from 'motion/react';
 import { Icon, type IconName } from '@/components/Icon';
 
 type Props = { icon: IconName; label: string; onPress: () => void };
@@ -6,13 +7,16 @@ type Props = { icon: IconName; label: string; onPress: () => void };
 // its step.
 export function FloatingButton({ icon, label, onPress }: Props) {
   return (
-    <button
+    <motion.button
       type="button"
       onClick={onPress}
       aria-label={label}
-      className="fade-in pointer-events-auto flex size-11 items-center justify-center rounded-full bg-background-secondary shadow-floating active:opacity-70"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.22 }}
+      className="pointer-events-auto flex size-11 items-center justify-center rounded-full bg-background-secondary shadow-floating active:opacity-70"
     >
       <Icon name={icon} />
-    </button>
+    </motion.button>
   );
 }

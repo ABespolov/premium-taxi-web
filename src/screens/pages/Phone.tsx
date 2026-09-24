@@ -1,16 +1,16 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router';
 import { requestCode } from '@/api/auth';
 import { Button } from '@/components/Button';
 import { NavBar } from '@/components/NavBar';
 import { FormFooter, Page, PageBody } from '@/components/Page';
 import { TextField } from '@/components/TextField';
-import { useNavigateKeepingFocus } from '@/hooks/use-navigate-keeping-focus';
 import { messageOf } from '@/hooks/use-request';
 import { formatPhoneInput } from '@/utils/format';
 import { isValidPhone } from '@/utils/phone';
 
 export function Phone() {
-  const navigate = useNavigateKeepingFocus();
+  const navigate = useNavigate();
   const [phone, setPhone] = useState('+');
   const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +46,6 @@ export function Phone() {
           inputMode="tel"
           autoComplete="tel"
           maxLength={20}
-          data-carry-focus
         />
         {error ? <p className="text-footnote text-label-secondary">{error}</p> : null}
       </PageBody>

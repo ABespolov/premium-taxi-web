@@ -1,3 +1,4 @@
+import { AnimatePresence } from 'motion/react';
 import { useRef, useState } from 'react';
 import { type MapHandlers, type MapScene, MapView } from '@/components/MapView';
 import { useBooking } from '@/hooks/use-booking';
@@ -48,7 +49,9 @@ export function Home() {
           <HomeStep key="home" onSchedule={() => setIsScheduling(true)} />
         )}
       </MapStageContext>
-      {isScheduling ? <ScheduleSheet onClose={() => setIsScheduling(false)} /> : null}
+      <AnimatePresence>
+        {isScheduling ? <ScheduleSheet onClose={() => setIsScheduling(false)} /> : null}
+      </AnimatePresence>
     </div>
   );
 }

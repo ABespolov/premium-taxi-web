@@ -1,5 +1,3 @@
-import type { MouseEvent } from 'react';
-
 type Props = {
   label: string;
   onPress: () => void;
@@ -15,11 +13,6 @@ const VARIANT = {
   secondary: 'bg-background-tertiary text-label-primary active:opacity-70',
 } as const;
 
-// Keeps focus, and so the keyboard, in the field being filled when the button is tapped.
-function keepFocus(event: MouseEvent) {
-  event.preventDefault();
-}
-
 export function Button({
   label,
   onPress,
@@ -31,7 +24,6 @@ export function Button({
     <button
       type="button"
       onClick={onPress}
-      onMouseDown={keepFocus}
       disabled={isDisabled}
       className={`flex shrink-0 items-center justify-center rounded-[14px] text-headline font-semibold transition-opacity disabled:opacity-40 ${SIZE[size]} ${VARIANT[variant]}`}
     >
