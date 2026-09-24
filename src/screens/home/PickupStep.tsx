@@ -43,8 +43,15 @@ export function PickupStep({ target }: { target: PinTarget }) {
     address.data.coord[1] === center[1];
   const place = hasAddressForCenter ? address.data : placeNear(center);
 
+  // Followed, not read once: arriving from Where to, the keyboard is still closing and the
+  // screen grows back after this step appears.
   useLayoutEffect(() => {
-    setLayerHeight(layer.current?.offsetHeight ?? 0);
+    const node = layer.current;
+    if (!node) return;
+    setLayerHeight(node.offsetHeight);
+    const observer = new ResizeObserver(() => setLayerHeight(node.offsetHeight));
+    observer.observe(node);
+    return () => observer.disconnect();
   }, []);
 
   useMapScene(
