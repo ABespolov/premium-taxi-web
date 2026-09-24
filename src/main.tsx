@@ -1,7 +1,8 @@
 import './index.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { createHashRouter, RouterProvider } from 'react-router';
+import { createHashRouter } from 'react-router';
+import { RouterProvider } from 'react-router/dom';
 import { AppFrame } from '@/components/AppFrame';
 import { StackOutlet } from '@/components/StackOutlet';
 import { BookingProvider } from '@/hooks/use-booking';

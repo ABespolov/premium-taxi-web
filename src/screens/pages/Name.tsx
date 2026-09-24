@@ -43,6 +43,7 @@ export function Name() {
           autoComplete="given-name"
           autoCapitalize="words"
           enterKeyHint="done"
+          data-carry-focus
         />
         {error ? <p className="text-footnote text-label-secondary">{error}</p> : null}
       </PageBody>

@@ -1,8 +1,4 @@
-import { animate, motion, useMotionValue } from 'motion/react';
 import { type ReactNode, useLayoutEffect, useRef } from 'react';
-
-const RESIZE = { duration: 0.32, ease: [0.215, 0.61, 0.355, 1] } as const;
-const CONTENT_FADE = { duration: 0.22 } as const;
 
 const GAPS = { none: 'gap-0', tight: 'gap-3', regular: 'gap-4' } as const;
 
@@ -22,7 +18,24 @@ type Props = {
 // so moving between steps resizes one white sheet instead of swapping two.
 let shownHeight = 0;
 
-// The white bottom sheet that sits over the map, with its grabber.
+// Moves the white background to `offset` at once, then lets the CSS transition carry it
+// back to the sheet's edge.
+function slideFrom(background: HTMLElement, offset: number) {
+  background.classList.remove('is-sliding');
+  background.style.transform = `translateY(${offset}px)`;
+  background.getBoundingClientRect();
+  background.classList.add('is-sliding');
+  background.style.transform = '';
+}
+
+// Where the background is right now, mid-slide or not.
+function currentOffset(background: HTMLElement) {
+  return new DOMMatrix(getComputedStyle(background).transform).m42;
+}
+
+// The white bottom sheet that sits over the map, with its grabber. It takes its new height
+// at once; only its white background slides from the old edge to the new one, a transform a
+// phone animates without laying the sheet out again every frame.
 export function Sheet({
   children,
   gap = 'tight',
@@ -31,37 +44,42 @@ export function Sheet({
   hasGrabber = true,
 }: Props) {
   const content = useRef<HTMLDivElement>(null);
-  const height = useMotionValue<number | 'auto'>(shownHeight || 'auto');
+  const background = useRef<HTMLDivElement>(null);
   const onMeasureRef = useRef(onMeasure);
   onMeasureRef.current = onMeasure;
 
   useLayoutEffect(() => {
     const node = content.current;
-    if (!node) return;
-    function resize(next: number) {
+    const white = background.current;
+    if (!node || !white) return;
+    let height = node.offsetHeight;
+    onMeasureRef.current?.(height);
+    if (shownHeight > 0 && shownHeight !== height) slideFrom(white, height - shownHeight);
+    shownHeight = height;
+
+    const observer = new ResizeObserver(() => {
+      const next = node.offsetHeight;
+      if (next === height) return;
       onMeasureRef.current?.(next);
-      const current = height.get();
-      if (current === 'auto' || current === next) height.set(next);
-      else animate(height, next, RESIZE);
+      slideFrom(white, currentOffset(white) + next - height);
+      height = next;
       shownHeight = next;
-    }
-    resize(node.offsetHeight);
-    const observer = new ResizeObserver(() => resize(node.offsetHeight));
+    });
     observer.observe(node);
     return () => observer.disconnect();
-  }, [height]);
+  }, []);
 
   return (
-    <motion.div
-      className="pointer-events-auto overflow-hidden rounded-t-[20px] bg-background-secondary"
-      style={{ height }}
-    >
-      <motion.div
+    <div className="pointer-events-auto relative">
+      {/* Runs past the bottom of the screen, so sliding it never uncovers the map below. */}
+      <div
+        ref={background}
+        className="sheet-background absolute inset-x-0 top-0 -bottom-[100vh] rounded-t-[20px] bg-background-secondary"
+        aria-hidden
+      />
+      <div
         ref={content}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={CONTENT_FADE}
-        className={`flex flex-col pt-2.5 ${GAPS[gap]}`}
+        className={`fade-in-late relative flex flex-col pt-2.5 ${GAPS[gap]}`}
         style={{
           height: fixedHeight,
           paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
@@ -74,7 +92,7 @@ export function Sheet({
           />
         ) : null}
         {children}
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
