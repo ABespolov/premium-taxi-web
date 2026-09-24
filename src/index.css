@@ -1,0 +1,196 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Newsreader";
+  font-weight: 500;
+  font-display: block;
+  src: url("./assets/Newsreader_500Medium.ttf") format("truetype");
+}
+
+/* Mirrors the Figma variables; letter spacing is converted from Figma percent to pixels. */
+@theme {
+  --color-label-primary: #0a0a0b;
+  --color-label-secondary: #5e5e63;
+  --color-label-tertiary: #9b9ba1;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #ffffff;
+  --color-background-tertiary: #f2f2f2;
+  --color-separator: #ebebeb;
+  --color-accent: #8a6a3b;
+  /* Figma's Scrim: black at 32%, layer opacity 45%. */
+  --color-scrim: rgb(0 0 0 / 0.144);
+  --color-brand-visa: #1a1f71;
+  --color-brand-amex: #2e77bc;
+  --color-brand-apple-pay: #000000;
+  --color-map-land: #edeae3;
+
+  --font-serif: "Newsreader", Georgia, serif;
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", system-ui, sans-serif;
+
+  --text-large-title: 38px;
+  --text-large-title--line-height: 40px;
+  --text-large-title--letter-spacing: -0.57px;
+  --text-title1: 34px;
+  --text-title1--line-height: 37px;
+  --text-title1--letter-spacing: -0.51px;
+  --text-title2: 28px;
+  --text-title2--line-height: 31px;
+  --text-title2--letter-spacing: -0.28px;
+  --text-title3: 20px;
+  --text-title3--line-height: 25px;
+  --text-title3--letter-spacing: -0.3px;
+  --text-headline: 17px;
+  --text-headline--line-height: 22px;
+  --text-headline--letter-spacing: -0.41px;
+  --text-body: 17px;
+  --text-body--line-height: 22px;
+  --text-body--letter-spacing: -0.41px;
+  --text-subheadline: 15px;
+  --text-subheadline--line-height: 20px;
+  --text-subheadline--letter-spacing: -0.23px;
+  --text-footnote: 13px;
+  --text-footnote--line-height: 18px;
+  --text-footnote--letter-spacing: -0.08px;
+  --text-caption: 12px;
+  --text-caption--line-height: 16px;
+  --text-caption--letter-spacing: 0px;
+
+  /* Figma's Elevation/Floating effect. */
+  --shadow-floating: 0 2px 8px rgb(0 0 0 / 0.35);
+}
+
+@layer base {
+  /* An app, not a document: nothing scrolls or zooms the page itself. */
+  html,
+  body,
+  #root {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  body {
+    background: #ffffff;
+    font-family: var(--font-sans);
+    color: var(--color-label-primary);
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: pan-x pan-y;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  input,
+  textarea {
+    user-select: text;
+    -webkit-user-select: text;
+    font: inherit;
+    color: inherit;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
+
+  /* Focus shows as a field's border, as in Figma; no browser outline on top of it. */
+  :focus {
+    outline: none;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* The map fades in once its first tiles are drawn. */
+.map canvas {
+  opacity: 0;
+  transition: opacity 450ms ease-out;
+}
+
+.map.is-drawn canvas {
+  opacity: 1;
+}
+
+.map-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: var(--shadow-floating);
+  white-space: nowrap;
+  text-align: left;
+}
+
+.map-label-title {
+  font-size: 13px;
+  line-height: 18px;
+  font-weight: 600;
+  letter-spacing: -0.08px;
+  color: var(--color-label-primary);
+}
+
+.map-label-subtitle {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--color-label-secondary);
+}
+
+.map-label svg,
+.map-pin svg {
+  display: block;
+}
+
+.map-pin {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.map-pulse .ring {
+  transform-origin: 100px 100px;
+  animation: map-pulse 2s ease-out infinite;
+}
+
+.map-pulse .middle {
+  animation-delay: 0.3s;
+}
+
+@keyframes map-pulse {
+  0% {
+    transform: scale(0.7);
+  }
+  70% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(0.7);
+  }
+}
+
+.progress-sweep {
+  animation: progress-sweep 1.4s linear infinite;
+}
+
+@keyframes progress-sweep {
+  from {
+    transform: translateX(-120px);
+  }
+  to {
+    transform: translateX(430px);
+  }
+}
