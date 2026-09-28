@@ -127,7 +127,7 @@ export function WhereToStep({ next }: { next?: ServiceId }) {
   return (
     <MapLayer ref={layer}>
       <div className="absolute inset-x-0 bottom-0">
-        <Sheet gap="none" height={layerHeight || undefined} hasGrabber={false}>
+        <Sheet gap="none" height={layerHeight || undefined}>
           <div
             className="flex min-h-0 flex-1 flex-col"
             style={{ paddingTop: 'env(safe-area-inset-top)' }}

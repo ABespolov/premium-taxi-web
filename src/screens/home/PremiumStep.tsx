@@ -1,6 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { getPremiumCars, getRoute, premiumCarFor } from '@/api/rides';
-import { Icon } from '@/components/Icon';
 import type { MapMarker } from '@/components/MapView';
 import { useBooking } from '@/hooks/use-booking';
 import { useRequest } from '@/hooks/use-request';
@@ -11,9 +10,9 @@ import { useMapScene } from '@/screens/home/map-scene';
 import { ServiceSheet } from '@/screens/home/ServiceSheet';
 import { formatMinutes, formatPriceEur } from '@/utils/format';
 
-const SHEET_HEIGHT_ESTIMATE = 553;
+const SHEET_HEIGHT_ESTIMATE = 400;
 const NAV_HEIGHT = 48;
-const CARD_WIDTH = 280;
+const CARD_WIDTH = 300;
 const CARD_GAP = 12;
 
 type Props = { destination: Place; onSchedule: () => void };
@@ -49,7 +48,7 @@ export function PremiumStep({ destination, onSchedule }: Props) {
   return (
     <ServiceSheet
       title="Premium"
-      subtitle="Each car comes with its own chauffeur"
+      subtitle="Book in advance"
       pickup={pickup}
       destination={destination}
       orderLabel={`${scheduledAt ? 'Book' : 'Order'} the ${car.shortName} · ${formatPriceEur(car.priceEur)}`}
@@ -110,16 +109,25 @@ function CarCarousel({ cars, selectedId, onSelect }: CarouselProps) {
             aria-checked={isSelected}
             aria-label={`${car.name}, ${car.details}, ${formatPriceEur(car.priceEur)}`}
             onClick={() => pick(car, index)}
-            className="flex h-full shrink-0 snap-start flex-col gap-2.5 text-left"
+            className="h-full shrink-0 snap-start text-left"
             style={{ width: CARD_WIDTH }}
           >
-            <span className="relative flex min-h-0 w-full flex-1 gap-1 overflow-hidden rounded-2xl">
-              <img
-                src={car.carImage}
-                alt=""
-                draggable={false}
-                className="h-full min-w-0 flex-1 object-cover"
-              />
+            <span className="relative flex h-full w-full gap-1 overflow-hidden rounded-2xl">
+              <span className="relative h-full min-w-0 flex-1">
+                <img
+                  src={car.carImage}
+                  alt=""
+                  draggable={false}
+                  className="h-full w-full object-cover"
+                />
+                {/* Name, price and wait sit on the photo, so the card needs no rows below. */}
+                <span className="absolute inset-x-0 bottom-0 flex flex-col bg-gradient-to-t from-black/75 to-transparent px-3 pt-8 pb-2.5 text-white">
+                  <span className="truncate text-subheadline font-semibold">{car.name}</span>
+                  <span className="text-subheadline">
+                    {formatPriceEur(car.priceEur)} · in {formatMinutes(car.etaMinutes)}
+                  </span>
+                </span>
+              </span>
               <img
                 src={car.cabinImage}
                 alt=""
@@ -130,16 +138,6 @@ function CarCarousel({ cars, selectedId, onSelect }: CarouselProps) {
                 <span className="pointer-events-none absolute inset-0 rounded-2xl ring-[3px] ring-label-primary ring-inset" />
               ) : null}
               <RadioMark isSelected={isSelected} />
-            </span>
-            <span className="flex items-baseline gap-2">
-              <span className="min-w-0 flex-1 truncate text-headline font-semibold">
-                {car.name}
-              </span>
-              <span className="text-headline font-semibold">{formatPriceEur(car.priceEur)}</span>
-            </span>
-            <span className="flex items-center gap-1.5 text-subheadline text-label-secondary">
-              <Icon name="clock" size={16} />
-              Can pick you up in {formatMinutes(car.etaMinutes)}
             </span>
           </button>
         );

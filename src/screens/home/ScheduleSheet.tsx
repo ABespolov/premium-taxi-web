@@ -97,10 +97,9 @@ export function ScheduleSheet({ onClose }: { onClose: () => void }) {
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
         transition={SLIDE}
-        className="relative flex flex-col gap-5 rounded-t-[20px] bg-background-secondary px-5 pt-9"
+        className="relative flex flex-col gap-5 rounded-t-[20px] bg-background-secondary px-5 pt-5"
         style={{ paddingBottom: BOTTOM_INSET }}
       >
-        <div className="absolute top-[11px] left-1/2 h-[5px] w-9 -translate-x-1/2 rounded-[3px] bg-label-tertiary" />
         <div className="flex flex-col gap-1">
           <h2 className="font-serif text-title2">Schedule a ride</h2>
           <p className="text-subheadline text-label-secondary">Up to 30 days ahead</p>

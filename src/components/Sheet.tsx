@@ -16,21 +16,14 @@ type Props = {
   // A sheet raised to a fixed height, such as Where to filling the screen; without it the
   // sheet fits its content.
   height?: number;
-  hasGrabber?: boolean;
 };
 
 // The height of the sheet last shown over the map. The next step's sheet starts from it,
 // so moving between steps resizes one white sheet instead of swapping two.
 let shownHeight = 0;
 
-// The white bottom sheet that sits over the map, with its grabber.
-export function Sheet({
-  children,
-  gap = 'tight',
-  onMeasure,
-  height: fixedHeight,
-  hasGrabber = true,
-}: Props) {
+// The white bottom sheet that sits over the map. It has no grabber: nothing drags it.
+export function Sheet({ children, gap = 'tight', onMeasure, height: fixedHeight }: Props) {
   const content = useRef<HTMLDivElement>(null);
   const height = useMotionValue<number | 'auto'>(shownHeight || 'auto');
   const onMeasureRef = useRef(onMeasure);
@@ -62,18 +55,13 @@ export function Sheet({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={CONTENT_FADE}
-        className={`flex flex-col pt-2.5 ${GAPS[gap]}`}
+        // A sheet raised over the whole screen brings its own nav bar, so it needs no top space.
+        className={`flex flex-col ${fixedHeight ? '' : 'pt-5'} ${GAPS[gap]}`}
         style={{
           height: fixedHeight,
           paddingBottom: BOTTOM_INSET,
         }}
       >
-        {hasGrabber ? (
-          <div
-            className="h-[5px] w-9 shrink-0 self-center rounded-[3px] bg-label-tertiary"
-            aria-hidden
-          />
-        ) : null}
         {children}
       </motion.div>
     </motion.div>

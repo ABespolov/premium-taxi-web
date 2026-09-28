@@ -74,7 +74,7 @@ function TripSheet({ trip, searchError }: { trip: Trip; searchError: string | nu
 
   return (
     <div className="flex flex-col gap-4 px-5">
-      <div className="flex flex-col gap-1 pt-2" aria-live="polite">
+      <div className="flex flex-col gap-1" aria-live="polite">
         <h2 className="font-serif text-title2">
           {trip.driver ? `${trip.driver.name} is on the way` : 'Finding your driver'}
         </h2>

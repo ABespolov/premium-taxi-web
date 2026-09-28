@@ -15,10 +15,12 @@ import { formatPickupTime } from '@/utils/format';
 
 // Both services share this sheet, so they are the same height and the route sits in the
 // same place; only the middle differs: Premium's cars, Business's standard.
-export const SERVICE_MIDDLE_HEIGHT = 204;
+// Tall enough for the car photos to read, short enough to leave the map about half the screen.
+export const SERVICE_MIDDLE_HEIGHT = 144;
 
 type Props = {
   title: string;
+  // Beside the title, on the same line: "Book in advance", "4 min away".
   subtitle: string;
   children: ReactNode;
   pickup: Place;
@@ -70,9 +72,11 @@ export function ServiceSheet({
       </div>
       <div className="absolute inset-x-0 bottom-0">
         <Sheet gap="loose" onMeasure={onMeasure}>
-          <div className="flex flex-col gap-1 px-5 pt-2">
+          <div className="flex items-baseline gap-3 px-5">
             <h2 className="font-serif text-title2">{title}</h2>
-            <p className="text-subheadline text-label-secondary">{subtitle}</p>
+            <p className="min-w-0 flex-1 truncate text-right text-subheadline text-label-secondary">
+              {subtitle}
+            </p>
           </div>
           <div style={{ height: SERVICE_MIDDLE_HEIGHT }}>{children}</div>
           <div className="px-5">

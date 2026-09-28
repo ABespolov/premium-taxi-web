@@ -10,7 +10,7 @@ import { ServiceSheet } from '@/screens/home/ServiceSheet';
 import { formatMinutes, formatPickupTime, formatPriceEur } from '@/utils/format';
 import { bearingDeg } from '@/utils/geo';
 
-const SHEET_HEIGHT_ESTIMATE = 553;
+const SHEET_HEIGHT_ESTIMATE = 400;
 const NAV_HEIGHT = 48;
 
 type Props = { destination: Place; onSchedule: () => void };
@@ -55,9 +55,7 @@ export function BusinessStep({ destination, onSchedule }: Props) {
     <ServiceSheet
       title={business.name}
       subtitle={
-        scheduledAt
-          ? `Pickup ${formatPickupTime(scheduledAt)}`
-          : `Nearest car arrives in ${etaLabel}`
+        scheduledAt ? `Pickup ${formatPickupTime(scheduledAt)}` : `Right now · ${etaLabel} away`
       }
       pickup={pickup}
       destination={destination}
@@ -72,7 +70,7 @@ export function BusinessStep({ destination, onSchedule }: Props) {
           src={business.image}
           alt=""
           draggable={false}
-          className="aspect-[4/3] w-[188px] shrink-0 rounded-2xl object-cover"
+          className="aspect-[4/3] h-full shrink-0 rounded-2xl object-cover"
         />
         <ul className="flex min-w-0 flex-1 flex-col gap-3">
           {business.standards.map((standard) => (

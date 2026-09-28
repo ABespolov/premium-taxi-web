@@ -6,6 +6,8 @@ import { Page } from '@/components/Page';
 import { useBooking } from '@/hooks/use-booking';
 import { initials } from '@/utils/format';
 
+// The side menu. A page opened from it takes the menu's place, so back from that page goes
+// to the map rather than to the menu.
 export function Account() {
   const navigate = useNavigate();
   const profile = getProfile();
@@ -33,8 +35,16 @@ export function Account() {
           </div>
         </div>
         <div className="flex gap-2.5">
-          <Shortcut icon="clock" label="Trips" onPress={() => navigate('/trips')} />
-          <Shortcut icon="wallet" label="Wallet" onPress={() => navigate('/wallet')} />
+          <Shortcut
+            icon="clock"
+            label="Trips"
+            onPress={() => navigate('/trips', { replace: true })}
+          />
+          <Shortcut
+            icon="wallet"
+            label="Wallet"
+            onPress={() => navigate('/wallet', { replace: true })}
+          />
           <Shortcut icon="help" label="Help" />
         </div>
         <button
