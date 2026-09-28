@@ -1,6 +1,6 @@
 import { createContext, type ReactNode, use, useState } from 'react';
 import { currentLocation, type Place } from '@/mocks/places';
-import type { RideClassId } from '@/mocks/ride-classes';
+import { premiumCars } from '@/mocks/ride-classes';
 
 const MAX_STOPS = 3;
 
@@ -8,7 +8,8 @@ export type Booking = {
   pickup: Place;
   stops: readonly Place[];
   destination: Place | null;
-  rideClassId: RideClassId;
+  // The car picked in Premium; Business sends whichever car is nearest.
+  premiumCarId: string;
   scheduledAt: Date | null;
 };
 
@@ -16,7 +17,7 @@ const initialBooking: Booking = {
   pickup: currentLocation,
   stops: [],
   destination: null,
-  rideClassId: 'comfort',
+  premiumCarId: premiumCars[0].id,
   scheduledAt: null,
 };
 
@@ -31,7 +32,7 @@ type BookingContextValue = {
 
 const BookingContext = createContext<BookingContextValue | null>(null);
 
-// The ride being put together across Home, Where to, Schedule and Choose a ride.
+// The ride being put together across Home, Where to, Schedule, Premium and Business.
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [booking, setBooking] = useState(initialBooking);
 

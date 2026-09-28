@@ -9,3 +9,7 @@ export const colors = {
 
 // Warms Mapbox Light towards the beige of the Figma map.
 export const mapColors = { land: '#EDEAE3', water: '#C9CED1', park: '#E1E3D5' };
+
+// Space under a sheet or a bottom button: 8px above the home indicator, as in Figma, and
+// never less than 24px where there is none, such as a desktop browser.
+export const BOTTOM_INSET = 'max(calc(env(safe-area-inset-bottom) + 8px), 24px)';

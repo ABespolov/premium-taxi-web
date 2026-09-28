@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import hero from '@/assets/hero.png';
 import { Button } from '@/components/Button';
+import { BOTTOM_INSET } from '@/theme/tokens';
 
 const HERO_FADE =
   'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 60%, #FFFFFF 100%)';
@@ -26,7 +27,7 @@ export function Welcome() {
       </div>
       <div
         className="relative flex flex-col gap-[30px] px-5 pt-3"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+        style={{ paddingBottom: BOTTOM_INSET }}
       >
         <div className="flex flex-col gap-2.5">
           <h1 className="font-serif text-large-title">Premium rides, without the wait</h1>

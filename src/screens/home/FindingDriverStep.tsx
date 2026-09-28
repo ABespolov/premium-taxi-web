@@ -96,7 +96,7 @@ function TripSheet({ trip, searchError }: { trip: Trip; searchError: string | nu
         </div>
         <div className="flex justify-between border-t border-separator pt-3 pb-3.5">
           <span className="min-w-0 flex-1 truncate text-subheadline text-label-secondary">
-            {trip.rideClassName} · {trip.car} or similar
+            {trip.serviceName} · {trip.car}
           </span>
           <span className="text-subheadline font-semibold">{formatPriceEur(trip.priceEur)}</span>
         </div>

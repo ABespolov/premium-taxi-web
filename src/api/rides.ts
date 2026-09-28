@@ -1,28 +1,27 @@
 import { drivingRoute } from '@/api/mapbox';
 import type { Coord, Place } from '@/mocks/places';
-import { drivers, type RideClassId, rideClasses } from '@/mocks/ride-classes';
+import {
+  business,
+  drivers,
+  type PremiumCar,
+  premiumCars,
+  type ServiceId,
+} from '@/mocks/ride-classes';
 import { delay } from '@/utils/delay';
-import { roadDistanceKm } from '@/utils/geo';
+import { destinationPoint, roadDistanceKm } from '@/utils/geo';
 
 // Average city traffic speed, used until Mapbox has routed the trip.
 const ESTIMATED_SPEED_KMH = 18;
 // Long enough for the Finding driver frame to be seen, short enough for a demo.
 const DRIVER_SEARCH_MS = 4000;
+// Where the nearest Business car waits: this far from the pickup, and in this direction.
+const NEAREST_CAR_KM = 0.6;
+const NEAREST_CAR_BEARING = 320;
 
 export type Route = {
   path: readonly Coord[];
   distanceKm: number;
   durationMinutes: number;
-};
-
-export type Quote = {
-  rideClassId: RideClassId;
-  name: string;
-  car: string;
-  seats: number;
-  image: (typeof rideClasses)[number]['image'];
-  priceEur: number;
-  etaMinutes: number;
 };
 
 export type Driver = { name: string; car: string; plate: string; etaMinutes: number };
@@ -34,10 +33,12 @@ export type Trip = {
   pickup: Place;
   stops: readonly Place[];
   destination: Place;
-  rideClassId: RideClassId;
-  rideClassName: string;
+  service: ServiceId;
+  serviceName: string;
+  // "Mercedes E‑Class or similar" for Business, the booked car for Premium.
   car: string;
   priceEur: number;
+  etaMinutes: number;
   pickupAt: Date;
   status: TripStatus;
   driver: Driver | null;
@@ -47,16 +48,21 @@ export type RideRequest = {
   pickup: Place;
   stops: readonly Place[];
   destination: Place;
-  rideClassId: RideClassId;
+  service: ServiceId;
+  premiumCarId: string;
   scheduledAt: Date | null;
 };
 
 let trips: Trip[] = [];
 
-function rideClassFor(rideClassId: RideClassId) {
-  const rideClass = rideClasses.find((candidate) => candidate.id === rideClassId);
-  if (!rideClass) throw new Error(`Unknown ride class ${rideClassId}`);
-  return rideClass;
+export function getPremiumCars() {
+  return premiumCars;
+}
+
+export function premiumCarFor(id: string): PremiumCar {
+  const car = premiumCars.find((candidate) => candidate.id === id);
+  if (!car) throw new Error(`Unknown car ${id}`);
+  return car;
 }
 
 // A straight-line estimate the fare is fixed on, so the price never moves once shown.
@@ -81,46 +87,47 @@ export async function getRoute(waypoints: readonly Coord[]): Promise<Route> {
   }
 }
 
-export function getPickupEta() {
-  return rideClasses[0].etaMinutes;
+export function getBusiness() {
+  return business;
 }
 
-function priceFor(rideClassId: RideClassId, distanceKm: number) {
-  const rideClass = rideClassFor(rideClassId);
-  return Math.round(rideClass.baseFareEur + rideClass.perKmEur * distanceKm);
+// The Business car closest to the pickup, which is the one an order now would send.
+export function nearestBusinessCar(pickup: Coord) {
+  return {
+    coord: destinationPoint(pickup, NEAREST_CAR_KM, NEAREST_CAR_BEARING),
+    etaMinutes: business.etaMinutes,
+  };
 }
 
-export function getQuotes(waypoints: readonly Coord[]): Quote[] {
+// Short rides pay the minimum, which is what Home quotes before there is a route.
+export function businessFare(waypoints: readonly Coord[]) {
   const { distanceKm } = estimateRoute(waypoints);
-  return rideClasses.map((rideClass) => ({
-    rideClassId: rideClass.id,
-    name: rideClass.name,
-    car: rideClass.car,
-    seats: rideClass.seats,
-    image: rideClass.image,
-    priceEur: priceFor(rideClass.id, distanceKm),
-    etaMinutes: rideClass.etaMinutes,
-  }));
+  return Math.max(
+    business.minimumFareEur,
+    Math.round(business.baseFareEur + business.perKmEur * distanceKm),
+  );
+}
+
+export function cheapestPremiumFare() {
+  return Math.min(...premiumCars.map((car) => car.priceEur));
 }
 
 export function requestRide(request: RideRequest) {
-  const rideClass = rideClassFor(request.rideClassId);
-  const { distanceKm } = estimateRoute([
-    request.pickup.coord,
-    ...request.stops.map((stop) => stop.coord),
-    request.destination.coord,
-  ]);
+  const { pickup, stops, destination, service, scheduledAt } = request;
+  const waypoints = [pickup.coord, ...stops.map((stop) => stop.coord), destination.coord];
+  const premiumCar = service === 'premium' ? premiumCarFor(request.premiumCarId) : null;
   const trip: Trip = {
     id: String(Date.now()),
-    pickup: request.pickup,
-    stops: request.stops,
-    destination: request.destination,
-    rideClassId: rideClass.id,
-    rideClassName: rideClass.name,
-    car: rideClass.car,
-    priceEur: priceFor(rideClass.id, distanceKm),
-    pickupAt: request.scheduledAt ?? new Date(),
-    status: request.scheduledAt ? 'scheduled' : 'searching',
+    pickup,
+    stops,
+    destination,
+    service,
+    serviceName: premiumCar ? 'Premium' : business.name,
+    car: premiumCar ? premiumCar.name : `${business.car} or similar`,
+    priceEur: premiumCar ? premiumCar.priceEur : businessFare(waypoints),
+    etaMinutes: premiumCar ? premiumCar.etaMinutes : business.etaMinutes,
+    pickupAt: scheduledAt ?? new Date(),
+    status: scheduledAt ? 'scheduled' : 'searching',
     driver: null,
   };
   trips = [trip, ...trips];
@@ -129,6 +136,11 @@ export function requestRide(request: RideRequest) {
 
 function updateTrip(tripId: string, changes: Partial<Trip>) {
   trips = trips.map((trip) => (trip.id === tripId ? { ...trip, ...changes } : trip));
+}
+
+// Trips live in memory, so a reload forgets them.
+export function hasTrip(tripId: string) {
+  return trips.some((trip) => trip.id === tripId);
 }
 
 export function getTrip(tripId: string) {
@@ -143,15 +155,14 @@ export async function findDriver(tripId: string) {
   const trip = getTrip(tripId);
   if (trip.status !== 'searching') return trip;
 
-  const rideClass = rideClassFor(trip.rideClassId);
   const pick = drivers[Number(tripId) % drivers.length];
   updateTrip(tripId, {
     status: 'on-the-way',
     driver: {
       name: pick.name,
       plate: pick.plate,
-      car: rideClass.car,
-      etaMinutes: rideClass.etaMinutes,
+      car: trip.car,
+      etaMinutes: trip.etaMinutes,
     },
   });
   return getTrip(tripId);

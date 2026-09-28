@@ -1,10 +1,11 @@
 import { animate, motion, useMotionValue } from 'motion/react';
 import { type ReactNode, useLayoutEffect, useRef } from 'react';
+import { BOTTOM_INSET } from '@/theme/tokens';
 
 const RESIZE = { duration: 0.32, ease: [0.215, 0.61, 0.355, 1] } as const;
 const CONTENT_FADE = { duration: 0.22 } as const;
 
-const GAPS = { none: 'gap-0', tight: 'gap-3', regular: 'gap-4' } as const;
+const GAPS = { none: 'gap-0', tight: 'gap-3', regular: 'gap-4', loose: 'gap-5' } as const;
 
 type Props = {
   children: ReactNode;
@@ -64,7 +65,7 @@ export function Sheet({
         className={`flex flex-col pt-2.5 ${GAPS[gap]}`}
         style={{
           height: fixedHeight,
-          paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)',
+          paddingBottom: BOTTOM_INSET,
         }}
       >
         {hasGrabber ? (

@@ -35,7 +35,7 @@ function SignedIn() {
   return (
     <>
       <Home />
-      <StackOutlet emptyPath="/home" />
+      <StackOutlet emptyPath="/home" isDrawer={(pathname) => pathname === '/account'} />
     </>
   );
 }

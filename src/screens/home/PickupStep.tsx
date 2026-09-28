@@ -9,9 +9,10 @@ import { useBooking } from '@/hooks/use-booking';
 import { useRequest } from '@/hooks/use-request';
 import { useSafeArea } from '@/hooks/use-safe-area';
 import type { Coord } from '@/mocks/places';
+import type { ServiceId } from '@/mocks/ride-classes';
 import { MapLayer, TOP_CONTROL } from '@/screens/home/MapLayer';
 import { useMapScene } from '@/screens/home/map-scene';
-import { type PinTarget, useShowStep } from '@/screens/home/steps';
+import { type PinTarget, useShowStep, useStepBack } from '@/screens/home/steps';
 
 const SHEET_HEIGHT_ESTIMATE = 253;
 const PIN_ZOOM = 17;
@@ -26,9 +27,10 @@ const COPY = {
 } as const;
 
 // The rider drags the map under a fixed pin to set a pickup or destination.
-export function PickupStep({ target }: { target: PinTarget }) {
+export function PickupStep({ target, next }: { target: PinTarget; next?: ServiceId }) {
   const insets = useSafeArea();
   const showStep = useShowStep();
+  const stepBack = useStepBack();
   const { booking, update } = useBooking();
   const start =
     target === 'destination' && booking.destination ? booking.destination : booking.pickup;
@@ -65,12 +67,20 @@ export function PickupStep({ target }: { target: PinTarget }) {
   const visibleCenterY = insets.top + (layerHeight - insets.top - sheetHeight) / 2;
 
   function editRoute() {
-    showStep({ name: 'where-to' });
+    stepBack();
   }
 
+  // A pickup goes back to Where to; a destination finishes the route, as picking it from
+  // the list would, so Where to is stepped over on the way.
   function confirm() {
-    update(target === 'pickup' ? { pickup: place } : { destination: place });
-    showStep({ name: target === 'destination' ? 'choose-ride' : 'where-to' });
+    if (target === 'pickup') {
+      update({ pickup: place });
+      stepBack();
+      return;
+    }
+    update({ destination: place });
+    if (next) showStep({ name: next }, { replace: true });
+    else stepBack(2);
   }
 
   return (

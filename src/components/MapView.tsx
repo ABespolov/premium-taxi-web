@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import { useEffect, useRef } from 'react';
 import { mapboxToken } from '@/api/mapbox';
 import {
+  CAR_SVG,
   CHEVRON_SVG,
   DROPOFF_SVG,
   PICKUP_SVG,
@@ -17,6 +18,8 @@ export type MapMarker =
   | { id: string; kind: 'pin'; coord: Coord; label?: string }
   | { id: string; kind: 'pulse'; coord: Coord }
   | { id: string; kind: 'stop'; coord: Coord }
+  // A car on its way, turned to the way it drives, with its arrival time beside it.
+  | { id: string; kind: 'car'; coord: Coord; label?: string; bearing?: number }
   | {
       id: string;
       kind: 'pickup' | 'dropoff';
@@ -24,6 +27,8 @@ export type MapMarker =
       label?: string;
       sublabel?: string;
       isPressable?: boolean;
+      // Centres the label over the marker, as Home does, instead of opening it sideways.
+      isLabelAbove?: boolean;
     };
 
 // One coordinate centres the map on it; several fit them all in view.
@@ -315,6 +320,22 @@ function drawMarkers(
       add(element, marker.coord, { anchor: 'center' });
       continue;
     }
+    if (marker.kind === 'car') {
+      const car = document.createElement('div');
+      car.innerHTML = CAR_SVG;
+      add(car, marker.coord, {
+        anchor: 'center',
+        rotation: marker.bearing ?? 0,
+        rotationAlignment: 'map',
+      });
+      if (marker.label) {
+        add(labelElement(marker.label, undefined, undefined), marker.coord, {
+          anchor: 'left',
+          offset: [16, -17],
+        });
+      }
+      continue;
+    }
     const glyph = document.createElement('div');
     glyph.innerHTML = GLYPHS[marker.kind];
     add(glyph, marker.coord, { anchor: 'center' });
@@ -322,6 +343,14 @@ function drawMarkers(
     const onPress = marker.isPressable
       ? () => handlers.current.onMarkerPress?.(marker.id)
       : undefined;
+    if (marker.isLabelAbove) {
+      // 12px between the label and the 16px dot.
+      add(labelElement(marker.label, marker.sublabel, onPress), marker.coord, {
+        anchor: 'bottom',
+        offset: [0, -20],
+      });
+      continue;
+    }
     const opensRight = (marker.kind === 'pickup') === pickupOnLeft;
     const lift = marker.kind === 'dropoff' ? [17, -21] : [12, -12];
     add(labelElement(marker.label, marker.sublabel, onPress), marker.coord, {

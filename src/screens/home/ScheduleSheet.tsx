@@ -4,6 +4,7 @@ import { Button } from '@/components/Button';
 import { Icon } from '@/components/Icon';
 import { useBooking } from '@/hooks/use-booking';
 import { WHEEL_ROW_HEIGHT, Wheel } from '@/screens/home/Wheel';
+import { BOTTOM_INSET } from '@/theme/tokens';
 import { formatDay } from '@/utils/format';
 
 const DAYS_AHEAD = 30;
@@ -97,7 +98,7 @@ export function ScheduleSheet({ onClose }: { onClose: () => void }) {
         exit={{ y: '100%' }}
         transition={SLIDE}
         className="relative flex flex-col gap-5 rounded-t-[20px] bg-background-secondary px-5 pt-9"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 8px)' }}
+        style={{ paddingBottom: BOTTOM_INSET }}
       >
         <div className="absolute top-[11px] left-1/2 h-[5px] w-9 -translate-x-1/2 rounded-[3px] bg-label-tertiary" />
         <div className="flex flex-col gap-1">

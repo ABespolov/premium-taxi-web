@@ -19,7 +19,7 @@ export function Account() {
 
   return (
     <Page>
-      <NavBar />
+      <NavBar kind="close" />
       <div className="flex flex-col gap-5 px-5 pt-8">
         <div className="flex items-center gap-4">
           <div className="flex min-w-0 flex-1 flex-col gap-1">

@@ -39,7 +39,7 @@ export function Trips() {
             label="Plan a ride"
             variant="secondary"
             size="compact"
-            onPress={() => navigate(stepHref({ name: 'where-to' }))}
+            onPress={() => navigate(stepHref({ name: 'home' }))}
           />
         </div>
       ) : (

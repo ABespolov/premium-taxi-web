@@ -7,9 +7,10 @@ import { Sheet } from '@/components/Sheet';
 import { useBooking } from '@/hooks/use-booking';
 import { useRequest } from '@/hooks/use-request';
 import type { Coord, Place } from '@/mocks/places';
+import { type ServiceId, serviceNames } from '@/mocks/ride-classes';
 import { MapLayer } from '@/screens/home/MapLayer';
 import { RouteCard, RouteRow } from '@/screens/home/RouteCard';
-import { useShowStep } from '@/screens/home/steps';
+import { useShowStep, useStepBack } from '@/screens/home/steps';
 import { formatDistanceKm } from '@/utils/format';
 import { roadDistanceKm } from '@/utils/geo';
 
@@ -25,9 +26,11 @@ type Field = 'destination' | 'new-stop';
 // field; with a mouse and keyboard the field is ready to type into.
 const canFocusUnprompted = () => window.matchMedia('(pointer: fine)').matches;
 
-// The sheet raised over the whole screen to plan the route.
-export function WhereToStep() {
+// The one place a route is typed. Picking the destination goes on to the service chosen
+// first (`next`), or back to where the rider came from: Home, or the service they were in.
+export function WhereToStep({ next }: { next?: ServiceId }) {
   const showStep = useShowStep();
+  const stepBack = useStepBack();
   const { booking, update, addStop, removeStop, canAddStop } = useBooking();
   const layer = useRef<HTMLDivElement>(null);
   const [layerHeight, setLayerHeight] = useState(0);
@@ -97,7 +100,8 @@ export function WhereToStep() {
     }
     update({ destination: place });
     setDestinationQuery(place.name);
-    showStep({ name: 'choose-ride' });
+    if (next) showStep({ name: next }, { replace: true });
+    else stepBack();
   }
 
   const actions = (
@@ -128,7 +132,10 @@ export function WhereToStep() {
             className="flex min-h-0 flex-1 flex-col"
             style={{ paddingTop: 'env(safe-area-inset-top)' }}
           >
-            <NavBar title="Plan your ride" onBack={() => showStep({ name: 'home' })} />
+            <NavBar
+              title={next ? `Plan your ${serviceNames[next]} ride` : 'Plan your ride'}
+              onBack={() => stepBack()}
+            />
             <div className="flex min-h-0 flex-1 flex-col gap-4 px-5 pt-6">
               <RouteCard actions={actions}>
                 <RouteRow key="pickup" marker="pickup">
@@ -184,7 +191,9 @@ export function WhereToStep() {
                       ) : null}
                       <button
                         type="button"
-                        onClick={() => showStep({ name: 'pickup-on-map', target: 'destination' })}
+                        onClick={() =>
+                          showStep({ name: 'pickup-on-map', target: 'destination', next })
+                        }
                         aria-label="Choose destination on map"
                         className="flex size-10 items-center justify-center rounded-xl bg-background-tertiary active:opacity-60"
                       >

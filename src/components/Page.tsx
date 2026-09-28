@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useVisualViewport } from '@/hooks/use-visual-viewport';
+import { BOTTOM_INSET } from '@/theme/tokens';
 
 // A full page pushed over the stack: white, clear of the status bar.
 export function Page({ children }: { children: ReactNode }) {
@@ -36,7 +37,7 @@ export function FormFooter({ children }: { children: ReactNode }) {
     <div
       className="flex shrink-0 flex-col gap-2 px-5 pt-2"
       style={{
-        paddingBottom: keyboardHeight > 0 ? 16 : 'calc(env(safe-area-inset-bottom) + 8px)',
+        paddingBottom: keyboardHeight > 0 ? 16 : BOTTOM_INSET,
       }}
     >
       {children}
