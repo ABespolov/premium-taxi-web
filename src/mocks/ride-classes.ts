@@ -1,12 +1,12 @@
-import bentleyCabin from '@/assets/cars/bentley-cabin.jpg';
-import bentleyCar from '@/assets/cars/bentley-car.jpg';
-import eClass from '@/assets/cars/e-class.jpg';
-import escaladeCabin from '@/assets/cars/escalade-cabin.jpg';
-import escaladeCar from '@/assets/cars/escalade-car.jpg';
-import ghostCabin from '@/assets/cars/ghost-cabin.jpg';
-import ghostCar from '@/assets/cars/ghost-car.jpg';
-import maybachCabin from '@/assets/cars/maybach-cabin.jpg';
-import maybachCar from '@/assets/cars/maybach-car.jpg';
+import bentleyCabin from '@/assets/cars/bentley-cabin.webp';
+import bentleyCar from '@/assets/cars/bentley-car.webp';
+import eClass from '@/assets/cars/e-class.webp';
+import escaladeCabin from '@/assets/cars/escalade-cabin.webp';
+import escaladeCar from '@/assets/cars/escalade-car.webp';
+import ghostCabin from '@/assets/cars/ghost-cabin.webp';
+import ghostCar from '@/assets/cars/ghost-car.webp';
+import maybachCabin from '@/assets/cars/maybach-cabin.webp';
+import maybachCar from '@/assets/cars/maybach-car.webp';
 
 // The two services on Home: Business sends the nearest car that meets the standard;
 // Premium lets the rider pick one particular car.

@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router';
-import hero from '@/assets/hero.png';
+import hero from '@/assets/hero.webp';
 import { Button } from '@/components/Button';
 import { BOTTOM_INSET } from '@/theme/tokens';
 

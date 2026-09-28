@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router';
 import { getSavedPlaces } from '@/api/places';
 import { businessFare, cheapestPremiumFare, getBusiness, getRoute } from '@/api/rides';
-import ghostCar from '@/assets/cars/ghost-car.jpg';
+import ghostCar from '@/assets/cars/ghost-car.webp';
 import { FloatingButton } from '@/components/FloatingButton';
 import { Icon, placeIcons } from '@/components/Icon';
 import type { MapMarker } from '@/components/MapView';
